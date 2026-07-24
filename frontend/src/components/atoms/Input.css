@@ -1,0 +1,113 @@
+/* Input Atom Styles */
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eshop-space-1);
+}
+
+.input-group__label {
+  font-size: var(--eshop-text-sm);
+  font-weight: var(--eshop-weight-medium);
+  color: var(--eshop-neutral-700);
+}
+
+.input-group__required {
+  color: var(--eshop-error-500);
+  margin-left: 2px;
+}
+
+.input-group__wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-group__input {
+  width: 100%;
+  padding: var(--eshop-space-3) var(--eshop-space-4);
+  font-size: var(--eshop-text-base);
+  color: var(--eshop-neutral-800);
+  background: var(--eshop-neutral-0);
+  border: 1.5px solid var(--eshop-neutral-200);
+  border-radius: var(--eshop-radius-lg);
+  transition:
+    border-color var(--eshop-duration-fast) var(--eshop-ease-default),
+    box-shadow var(--eshop-duration-fast) var(--eshop-ease-default);
+  min-height: 44px;
+}
+
+.input-group__input::placeholder {
+  color: var(--eshop-neutral-400);
+}
+
+.input-group__input:hover:not(:disabled) {
+  border-color: var(--eshop-neutral-300);
+}
+
+.input-group__input:focus {
+  outline: none;
+  border-color: var(--eshop-primary-500);
+  box-shadow: 0 0 0 3px var(--eshop-primary-100);
+}
+
+.input-group__input:disabled {
+  background: var(--eshop-neutral-100);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.input-group__input--has-icon {
+  padding-left: var(--eshop-space-10);
+}
+
+.input-group__input--has-action {
+  padding-right: var(--eshop-space-10);
+}
+
+/* Icons */
+.input-group__icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--eshop-neutral-400);
+}
+
+.input-group__icon--left {
+  left: var(--eshop-space-3);
+}
+
+.input-group__icon--right {
+  right: var(--eshop-space-3);
+}
+
+.input-group__toggle {
+  cursor: pointer;
+  padding: var(--eshop-space-1);
+  border-radius: var(--eshop-radius-sm);
+  transition: color var(--eshop-duration-fast) var(--eshop-ease-default);
+}
+
+.input-group__toggle:hover {
+  color: var(--eshop-neutral-600);
+}
+
+/* Error state */
+.input-group--error .input-group__input {
+  border-color: var(--eshop-error-500);
+}
+
+.input-group--error .input-group__input:focus {
+  box-shadow: 0 0 0 3px var(--eshop-error-100);
+}
+
+.input-group__error {
+  font-size: var(--eshop-text-sm);
+  color: var(--eshop-error-500);
+}
+
+.input-group__helper {
+  font-size: var(--eshop-text-sm);
+  color: var(--eshop-neutral-500);
+}

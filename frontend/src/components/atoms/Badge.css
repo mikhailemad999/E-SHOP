@@ -1,0 +1,73 @@
+/* Badge Atom Styles */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--eshop-space-1);
+  font-family: var(--eshop-font-body);
+  font-weight: var(--eshop-weight-medium);
+  text-transform: capitalize;
+  border-radius: var(--eshop-radius-full);
+  white-space: nowrap;
+}
+
+/* Sizes */
+.badge--xs {
+  font-size: 0.625rem;
+  padding: 2px var(--eshop-space-2);
+}
+
+.badge--sm {
+  font-size: var(--eshop-text-xs);
+  padding: var(--eshop-space-1) var(--eshop-space-2);
+}
+
+.badge--md {
+  font-size: var(--eshop-text-sm);
+  padding: var(--eshop-space-1) var(--eshop-space-3);
+}
+
+/* Dot indicator */
+.badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Variants */
+.badge--success {
+  background: var(--eshop-success-50);
+  color: var(--eshop-success-700);
+}
+.badge--success .badge__dot { background: var(--eshop-success-500); }
+
+.badge--warning {
+  background: var(--eshop-warning-50);
+  color: var(--eshop-warning-700);
+}
+.badge--warning .badge__dot { background: var(--eshop-warning-500); }
+
+.badge--danger {
+  background: var(--eshop-error-50);
+  color: var(--eshop-error-700);
+}
+.badge--danger .badge__dot { background: var(--eshop-error-500); }
+
+.badge--info {
+  background: var(--eshop-info-50);
+  color: var(--eshop-info-700);
+}
+.badge--info .badge__dot { background: var(--eshop-info-500); }
+
+.badge--neutral {
+  background: var(--eshop-neutral-100);
+  color: var(--eshop-neutral-600);
+}
+.badge--neutral .badge__dot { background: var(--eshop-neutral-400); }
+
+.badge--primary {
+  background: var(--eshop-primary-50);
+  color: var(--eshop-primary-700);
+}
+.badge--primary .badge__dot { background: var(--eshop-primary-500); }

@@ -1,0 +1,118 @@
+/* Button Atom Styles */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--eshop-space-2);
+  font-family: var(--eshop-font-body);
+  font-weight: var(--eshop-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  border: 2px solid transparent;
+  border-radius: var(--eshop-radius-lg);
+  cursor: pointer;
+  transition:
+    background-color var(--eshop-duration-fast) var(--eshop-ease-default),
+    border-color var(--eshop-duration-fast) var(--eshop-ease-default),
+    color var(--eshop-duration-fast) var(--eshop-ease-default),
+    box-shadow var(--eshop-duration-fast) var(--eshop-ease-default),
+    transform var(--eshop-duration-fast) var(--eshop-ease-default);
+  user-select: none;
+}
+
+/* ─── Sizes ─────────────────────────────────────────────── */
+.btn--sm {
+  font-size: var(--eshop-text-sm);
+  padding: var(--eshop-space-2) var(--eshop-space-3);
+  min-height: 36px;
+}
+
+.btn--md {
+  font-size: var(--eshop-text-base);
+  padding: var(--eshop-space-3) var(--eshop-space-5);
+  min-height: 44px;  /* Touch target */
+}
+
+.btn--lg {
+  font-size: var(--eshop-text-lg);
+  padding: var(--eshop-space-4) var(--eshop-space-8);
+  min-height: 52px;
+}
+
+/* ─── Primary ───────────────────────────────────────────── */
+.btn--primary {
+  background: var(--eshop-primary-600);
+  color: white;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--eshop-primary-700);
+  box-shadow: var(--eshop-shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn--primary:active:not(:disabled) {
+  background: var(--eshop-primary-800);
+  transform: translateY(0);
+}
+
+/* ─── Secondary ─────────────────────────────────────────── */
+.btn--secondary {
+  background: transparent;
+  color: var(--eshop-primary-600);
+  border-color: var(--eshop-primary-200);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: var(--eshop-primary-50);
+  border-color: var(--eshop-primary-300);
+}
+
+/* ─── Ghost ─────────────────────────────────────────────── */
+.btn--ghost {
+  background: transparent;
+  color: var(--eshop-neutral-600);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: var(--eshop-neutral-100);
+  color: var(--eshop-neutral-800);
+}
+
+/* ─── Danger ────────────────────────────────────────────── */
+.btn--danger {
+  background: var(--eshop-error-500);
+  color: white;
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: var(--eshop-error-700);
+  box-shadow: var(--eshop-shadow-md);
+}
+
+/* ─── States ────────────────────────────────────────────── */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn--full {
+  width: 100%;
+}
+
+/* ─── Loading Spinner ───────────────────────────────────── */
+.btn--loading {
+  cursor: wait;
+}
+
+.btn__spinner {
+  display: flex;
+  align-items: center;
+}
+
+.btn__spinner svg {
+  width: 1em;
+  height: 1em;
+  animation: spin 0.75s linear infinite;
+}

@@ -1,0 +1,51 @@
+/* Admin Dashboard CSS */
+
+.admin-dashboard {
+  padding: var(--eshop-space-8) var(--eshop-space-4);
+}
+
+.admin-dashboard__header {
+  margin-bottom: var(--eshop-space-6);
+}
+
+.admin-dashboard__alert {
+  background: var(--eshop-primary-50);
+  border: 1px solid var(--eshop-primary-200);
+  color: var(--eshop-primary-700);
+  padding: var(--eshop-space-3) var(--eshop-space-4);
+  border-radius: var(--eshop-radius-md);
+  margin-bottom: var(--eshop-space-6);
+}
+
+.admin-dashboard__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--eshop-space-4);
+  margin-bottom: var(--eshop-space-8);
+}
+
+.admin-dashboard__subtitle {
+  font-size: var(--eshop-text-xl);
+  margin-bottom: var(--eshop-space-4);
+}
+
+.moderation-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eshop-space-4);
+}
+
+.moderation-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--eshop-neutral-0);
+  border: 1px solid var(--eshop-neutral-100);
+  border-radius: var(--eshop-radius-lg);
+  padding: var(--eshop-space-5);
+}
+
+.moderation-actions {
+  display: flex;
+  gap: var(--eshop-space-3);
+}

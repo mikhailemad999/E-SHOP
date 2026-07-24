@@ -1,0 +1,259 @@
+"""
+Orders views — Cart management, Multi-Vendor Checkout, Order history, Seller SubOrder management, and Returns (RMA).
+"""
+
+import uuid
+from collections import defaultdict
+from django.db import transaction
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from apps.accounts.models import Address
+from apps.accounts.permissions import IsCustomer, IsSeller
+from apps.catalog.models import Listing
+from .models import Cart, CartItem, Order, ReturnRequest, SubOrder, SubOrderItem
+from .serializers import (
+    CartItemSerializer,
+    CartSerializer,
+    CheckoutSerializer,
+    OrderDetailSerializer,
+    ReturnRequestSerializer,
+    SubOrderSerializer,
+)
+
+
+# ─── Cart Views ───────────────────────────────────────────────────
+class CartDetailView(generics.RetrieveAPIView):
+    """Customer gets their current active cart."""
+
+    serializer_class = CartSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        cart, _ = Cart.objects.get_or_create(customer=self.request.user)
+        return cart
+
+
+class CartItemAddView(APIView):
+    """Add a listing to customer cart or increment quantity."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        listing_id = request.data.get("listing_id")
+        quantity = int(request.data.get("quantity", 1))
+
+        try:
+            listing = Listing.objects.get(id=listing_id, status=Listing.Status.LIVE)
+        except Listing.DoesNotExist:
+            return Response({"error": "Listing not available or out of stock."}, status=status.HTTP_404_NOT_FOUND)
+
+        if listing.stock_qty < quantity:
+            return Response({"error": f"Only {listing.stock_qty} items available in stock."}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart, _ = Cart.objects.get_or_create(customer=request.user)
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, listing=listing, defaults={"quantity": quantity})
+
+        if not created:
+            if listing.stock_qty < cart_item.quantity + quantity:
+                return Response({"error": f"Cannot add more than {listing.stock_qty} items to cart."}, status=status.HTTP_400_BAD_REQUEST)
+            cart_item.quantity += quantity
+            cart_item.save()
+
+        return Response(CartSerializer(cart, context={"request": request}).data, status=status.HTTP_200_OK)
+
+
+class CartItemDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Update quantity or remove an item from customer cart."""
+
+    serializer_class = CartItemSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CartItem.objects.filter(cart__customer=self.request.user)
+
+
+# ─── Checkout View (Multi-Vendor Splitting) ──────────────────────
+class CheckoutView(APIView):
+    """
+    Multi-Vendor Checkout Engine:
+    1. Reads items from customer's Cart.
+    2. Group items by Seller (Shop).
+    3. Creates 1 parent Order + N SubOrders (one per seller).
+    4. Decrements stock for each Listing.
+    5. Clears the customer's Cart.
+    All executed atomically inside @transaction.atomic!
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request):
+        serializer = CheckoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        try:
+            cart = Cart.objects.get(customer=request.user)
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart_items = cart.items.select_related("listing__shop", "listing__product").all()
+        if not cart_items.exists():
+            return Response({"error": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Resolve Shipping Address
+        if data.get("address_id"):
+            try:
+                addr = Address.objects.get(id=data["address_id"], user=request.user)
+                address_data = {
+                    "full_name": addr.full_name,
+                    "phone": addr.phone,
+                    "address_line1": addr.address_line1,
+                    "address_line2": addr.address_line2,
+                    "city": addr.city,
+                    "state": addr.state,
+                    "postal_code": addr.postal_code,
+                    "country": addr.country,
+                }
+            except Address.DoesNotExist:
+                return Response({"error": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            address_data = data["shipping_address"]
+
+        # Validate stock & group items by Shop
+        items_by_shop = defaultdict(list)
+        total_amount = 0
+
+        for item in cart_items:
+            listing = item.listing
+            if listing.stock_qty < item.quantity or listing.status != Listing.Status.LIVE:
+                return Response(
+                    {"error": f"Item '{listing.product.title}' by {listing.shop.name} is no longer available in the requested quantity."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            items_by_shop[listing.shop].append(item)
+            total_amount += listing.price * item.quantity
+
+        # Create parent Order
+        order_number = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+        order = Order.objects.create(
+            customer=request.user,
+            order_number=order_number,
+            payment_method=data["payment_method"],
+            total_amount=total_amount,
+            shipping_address=address_data,
+            notes=data.get("notes", ""),
+            status=Order.Status.PENDING,
+        )
+
+        # Create SubOrders per Shop & update stock
+        for shop, items in items_by_shop.items():
+            subtotal = sum(i.listing.price * i.quantity for i in items)
+            suborder = SubOrder.objects.create(
+                order=order,
+                shop=shop,
+                subtotal=subtotal,
+                status=SubOrder.Status.PENDING,
+            )
+
+            for item in items:
+                listing = item.listing
+                SubOrderItem.objects.create(
+                    suborder=suborder,
+                    listing=listing,
+                    quantity=item.quantity,
+                    unit_price=listing.price,
+                )
+                # Decrement stock
+                listing.stock_qty -= item.quantity
+                listing.save()
+
+        # Clear cart
+        cart.items.all().delete()
+
+        return Response(
+            {
+                "message": "Order placed successfully.",
+                "order": OrderDetailSerializer(order).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+# ─── Order Views ──────────────────────────────────────────────────
+class CustomerOrdersView(generics.ListAPIView):
+    """Customer views their order history."""
+
+    serializer_class = OrderDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(customer=self.request.user).prefetch_related("suborders__items__listing__product")
+
+
+class OrderDetailView(generics.RetrieveAPIView):
+    """Get single order detail by order_number."""
+
+    serializer_class = OrderDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "order_number"
+
+    def get_queryset(self):
+        return Order.objects.filter(customer=self.request.user)
+
+
+# ─── Seller SubOrder Views ────────────────────────────────────────
+class SellerSubOrdersView(generics.ListAPIView):
+    """Seller views incoming SubOrders for their shop."""
+
+    serializer_class = SubOrderSerializer
+    permission_classes = [IsSeller]
+
+    def get_queryset(self):
+        if hasattr(self.request.user, "shop"):
+            return SubOrder.objects.filter(shop=self.request.user.shop).prefetch_related("items__listing__product")
+        return SubOrder.objects.none()
+
+
+class SubOrderAcceptDenyView(APIView):
+    """Seller accepts or denies an incoming SubOrder."""
+
+    permission_classes = [IsSeller]
+
+    def post(self, request, pk):
+        try:
+            suborder = SubOrder.objects.get(pk=pk, shop=request.user.shop)
+        except SubOrder.DoesNotExist:
+            return Response({"error": "SubOrder not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        action = request.data.get("action")  # 'accept' or 'deny'
+        if action == "accept":
+            suborder.status = SubOrder.Status.ACCEPTED
+            suborder.save()
+            return Response({"message": f"SubOrder #{pk} accepted."})
+        elif action == "deny":
+            suborder.status = SubOrder.Status.DENIED
+            suborder.save()
+            # Restore stock
+            for item in suborder.items.all():
+                item.listing.stock_qty += item.quantity
+                item.listing.save()
+            return Response({"message": f"SubOrder #{pk} denied and stock restored."})
+        else:
+            return Response({"error": "Invalid action. Use 'accept' or 'deny'."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ─── Return Request Views ─────────────────────────────────────────
+class ReturnRequestListCreateView(generics.ListCreateAPIView):
+    """Customer views or submits a Return Request (RMA)."""
+
+    serializer_class = ReturnRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return ReturnRequest.objects.filter(customer=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(customer=self.request.user)

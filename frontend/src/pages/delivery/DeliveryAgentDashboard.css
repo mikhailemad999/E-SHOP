@@ -1,0 +1,64 @@
+/* Delivery Agent Dashboard CSS */
+
+.agent-dashboard {
+  padding: var(--eshop-space-8) var(--eshop-space-4);
+}
+
+.agent-dashboard__header {
+  margin-bottom: var(--eshop-space-6);
+}
+
+.agent-dashboard__alert {
+  background: var(--eshop-primary-50);
+  border: 1px solid var(--eshop-primary-200);
+  color: var(--eshop-primary-700);
+  padding: var(--eshop-space-3) var(--eshop-space-4);
+  border-radius: var(--eshop-radius-md);
+  margin-bottom: var(--eshop-space-6);
+}
+
+.deliveries-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eshop-space-4);
+}
+
+.delivery-card {
+  background: var(--eshop-neutral-0);
+  border: 1px solid var(--eshop-neutral-100);
+  border-radius: var(--eshop-radius-lg);
+  padding: var(--eshop-space-5);
+}
+
+.delivery-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--eshop-space-3);
+}
+
+.delivery-card__tracking {
+  font-family: monospace;
+  font-size: var(--eshop-text-xs);
+  color: var(--eshop-primary-600);
+
+}
+
+.delivery-card__details {
+  margin-bottom: var(--eshop-space-4);
+}
+
+.delivery-card__details p {
+  display: flex;
+  align-items: center;
+  gap: var(--eshop-space-2);
+  margin-bottom: var(--eshop-space-1);
+  font-size: var(--eshop-text-sm);
+
+}
+
+.delivery-card__actions {
+  display: flex;
+  gap: var(--eshop-space-3);
+  flex-wrap: wrap;
+}

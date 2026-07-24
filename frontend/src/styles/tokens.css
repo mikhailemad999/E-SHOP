@@ -1,0 +1,189 @@
+/*
+ * E-Shop Marketplace — Design Tokens
+ * ═══════════════════════════════════════════════════════════
+ * Generated with ui-ux-pro-max + frontend-design + product-design skills.
+ * 
+ * Design Direction:
+ * - Aesthetic: "Luxe Commercial" — elevated e-commerce feel
+ * - DFII Target: ≥ 10 (Strong-to-Excellent)
+ * - Typography: expressive display + restrained body
+ * - Color: warm neutrals with a bold accent
+ *
+ * Naming: --eshop-{category}-{variant}
+ */
+
+:root {
+  /* ───────────────────────────────────────────────────────
+   * COLOR SYSTEM
+   * Curated palette: warm neutrals + indigo accent + semantic
+   * ─────────────────────────────────────────────────────── */
+
+  /* Primary — Deep indigo for CTAs, links, active states */
+  --eshop-primary-50: #eef2ff;
+  --eshop-primary-100: #e0e7ff;
+  --eshop-primary-200: #c7d2fe;
+  --eshop-primary-300: #a5b4fc;
+  --eshop-primary-400: #818cf8;
+  --eshop-primary-500: #6366f1;
+  --eshop-primary-600: #4f46e5;
+  --eshop-primary-700: #4338ca;
+  --eshop-primary-800: #3730a3;
+  --eshop-primary-900: #312e81;
+
+  /* Accent — Warm amber for attention, deals, highlights */
+  --eshop-accent-50: #fffbeb;
+  --eshop-accent-100: #fef3c7;
+  --eshop-accent-200: #fde68a;
+  --eshop-accent-300: #fcd34d;
+  --eshop-accent-400: #fbbf24;
+  --eshop-accent-500: #f59e0b;
+  --eshop-accent-600: #d97706;
+  --eshop-accent-700: #b45309;
+  --eshop-accent-800: #92400e;
+  --eshop-accent-900: #78350f;
+
+  /* Neutral — Warm gray scale for text, borders, backgrounds */
+  --eshop-neutral-0: #ffffff;
+  --eshop-neutral-50: #fafaf9;
+  --eshop-neutral-100: #f5f5f4;
+  --eshop-neutral-200: #e7e5e4;
+  --eshop-neutral-300: #d6d3d1;
+  --eshop-neutral-400: #a8a29e;
+  --eshop-neutral-500: #78716c;
+  --eshop-neutral-600: #57534e;
+  --eshop-neutral-700: #44403c;
+  --eshop-neutral-800: #292524;
+  --eshop-neutral-900: #1c1917;
+
+  /* Semantic — Success, Warning, Error, Info */
+  --eshop-success-50: #f0fdf4;
+  --eshop-success-100: #dcfce7;
+  --eshop-success-500: #22c55e;
+  --eshop-success-700: #15803d;
+
+  --eshop-warning-50: #fffbeb;
+  --eshop-warning-100: #fef3c7;
+  --eshop-warning-500: #f59e0b;
+  --eshop-warning-700: #b45309;
+
+  --eshop-error-50: #fef2f2;
+  --eshop-error-100: #fee2e2;
+  --eshop-error-500: #ef4444;
+  --eshop-error-700: #b91c1c;
+
+  --eshop-info-50: #eff6ff;
+  --eshop-info-100: #dbeafe;
+  --eshop-info-500: #3b82f6;
+  --eshop-info-700: #1d4ed8;
+
+  /* ───────────────────────────────────────────────────────
+   * TYPOGRAPHY
+   * Display: Outfit (expressive, geometric)
+   * Body: Inter (restrained, highly legible)
+   * ─────────────────────────────────────────────────────── */
+  --eshop-font-display: 'Outfit', system-ui, -apple-system, sans-serif;
+  --eshop-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --eshop-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Type Scale (major third: 1.25) */
+  --eshop-text-xs: 0.75rem;      /* 12px */
+  --eshop-text-sm: 0.875rem;     /* 14px */
+  --eshop-text-base: 1rem;       /* 16px */
+  --eshop-text-lg: 1.125rem;     /* 18px */
+  --eshop-text-xl: 1.25rem;      /* 20px */
+  --eshop-text-2xl: 1.5rem;      /* 24px */
+  --eshop-text-3xl: 1.875rem;    /* 30px */
+  --eshop-text-4xl: 2.25rem;     /* 36px */
+  --eshop-text-5xl: 3rem;        /* 48px */
+  --eshop-text-6xl: 3.75rem;     /* 60px */
+
+  /* Font Weights */
+  --eshop-weight-light: 300;
+  --eshop-weight-regular: 400;
+  --eshop-weight-medium: 500;
+  --eshop-weight-semibold: 600;
+  --eshop-weight-bold: 700;
+  --eshop-weight-extrabold: 800;
+
+  /* Line Heights */
+  --eshop-leading-tight: 1.2;
+  --eshop-leading-snug: 1.375;
+  --eshop-leading-normal: 1.5;
+  --eshop-leading-relaxed: 1.625;
+
+  /* Letter Spacing */
+  --eshop-tracking-tight: -0.025em;
+  --eshop-tracking-normal: 0em;
+  --eshop-tracking-wide: 0.025em;
+  --eshop-tracking-wider: 0.05em;
+  --eshop-tracking-widest: 0.1em;
+
+  /* ───────────────────────────────────────────────────────
+   * SPACING (4px base unit)
+   * ─────────────────────────────────────────────────────── */
+  --eshop-space-0: 0;
+  --eshop-space-1: 0.25rem;    /* 4px */
+  --eshop-space-2: 0.5rem;     /* 8px */
+  --eshop-space-3: 0.75rem;    /* 12px */
+  --eshop-space-4: 1rem;       /* 16px */
+  --eshop-space-5: 1.25rem;    /* 20px */
+  --eshop-space-6: 1.5rem;     /* 24px */
+  --eshop-space-8: 2rem;       /* 32px */
+  --eshop-space-10: 2.5rem;    /* 40px */
+  --eshop-space-12: 3rem;      /* 48px */
+  --eshop-space-16: 4rem;      /* 64px */
+  --eshop-space-20: 5rem;      /* 80px */
+  --eshop-space-24: 6rem;      /* 96px */
+
+  /* ───────────────────────────────────────────────────────
+   * SHADOWS (elevation system)
+   * ─────────────────────────────────────────────────────── */
+  --eshop-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --eshop-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --eshop-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --eshop-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --eshop-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --eshop-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --eshop-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+
+  /* ───────────────────────────────────────────────────────
+   * BORDER RADIUS
+   * ─────────────────────────────────────────────────────── */
+  --eshop-radius-xs: 0.125rem;   /* 2px */
+  --eshop-radius-sm: 0.25rem;    /* 4px */
+  --eshop-radius-md: 0.5rem;     /* 8px */
+  --eshop-radius-lg: 0.75rem;    /* 12px */
+  --eshop-radius-xl: 1rem;       /* 16px */
+  --eshop-radius-2xl: 1.5rem;    /* 24px */
+  --eshop-radius-full: 9999px;
+
+  /* ───────────────────────────────────────────────────────
+   * MOTION / TRANSITIONS
+   * ─────────────────────────────────────────────────────── */
+  --eshop-duration-fast: 150ms;
+  --eshop-duration-normal: 250ms;
+  --eshop-duration-slow: 400ms;
+  --eshop-duration-slower: 600ms;
+  --eshop-ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --eshop-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --eshop-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --eshop-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ───────────────────────────────────────────────────────
+   * LAYOUT
+   * ─────────────────────────────────────────────────────── */
+  --eshop-max-width: 1280px;
+  --eshop-max-width-narrow: 768px;
+  --eshop-max-width-wide: 1440px;
+  --eshop-sidebar-width: 280px;
+  --eshop-header-height: 64px;
+
+  /* ───────────────────────────────────────────────────────
+   * Z-INDEX SCALE
+   * ─────────────────────────────────────────────────────── */
+  --eshop-z-dropdown: 100;
+  --eshop-z-sticky: 200;
+  --eshop-z-overlay: 300;
+  --eshop-z-modal: 400;
+  --eshop-z-toast: 500;
+}

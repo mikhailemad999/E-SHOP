@@ -1,0 +1,11 @@
+-r base.txt
+
+# Production security
+django-csp>=3.8,<4.0
+django-permissions-policy>=4.21,<5.0
+
+# Monitoring
+sentry-sdk[django]>=2.8,<3.0
+
+# Production ASGI
+daphne>=4.1,<5.0

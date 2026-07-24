@@ -1,0 +1,106 @@
+/* Profile Page CSS */
+
+.profile-page {
+  padding: var(--eshop-space-8) var(--eshop-space-4);
+}
+
+.profile-page__header {
+  display: flex;
+  align-items: center;
+  gap: var(--eshop-space-5);
+  margin-bottom: var(--eshop-space-8);
+  padding-bottom: var(--eshop-space-6);
+  border-bottom: 1px solid var(--eshop-neutral-200);
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--eshop-radius-full);
+  background: var(--eshop-primary-100);
+  color: var(--eshop-primary-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-page__alert {
+  background: var(--eshop-primary-50);
+  border: 1px solid var(--eshop-primary-200);
+  color: var(--eshop-primary-700);
+  padding: var(--eshop-space-3) var(--eshop-space-4);
+  border-radius: var(--eshop-radius-md);
+  margin-bottom: var(--eshop-space-6);
+}
+
+.profile-page__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--eshop-space-8);
+}
+
+@media (max-width: 900px) {
+  .profile-page__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profile-box {
+  background: var(--eshop-neutral-0);
+  border: 1px solid var(--eshop-neutral-100);
+  border-radius: var(--eshop-radius-xl);
+  padding: var(--eshop-space-6);
+}
+
+.profile-box h2 {
+  font-size: var(--eshop-text-xl);
+  margin-bottom: var(--eshop-space-5);
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eshop-space-4);
+}
+
+.address-card {
+  background: var(--eshop-neutral-50);
+  border: 1px solid var(--eshop-neutral-200);
+  border-radius: var(--eshop-radius-lg);
+  padding: var(--eshop-space-4);
+  font-size: var(--eshop-text-sm);
+}
+
+.address-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--eshop-space-2);
+}
+
+.user-order-card {
+  background: var(--eshop-neutral-50);
+  border: 1px solid var(--eshop-neutral-200);
+  border-radius: var(--eshop-radius-lg);
+  padding: var(--eshop-space-4);
+  margin-bottom: var(--eshop-space-3);
+}
+
+.user-order-card__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--eshop-space-2);
+}
+
+.user-order-card__items {
+  font-size: var(--eshop-text-sm);
+  color: var(--eshop-neutral-700);
+  margin-bottom: var(--eshop-space-2);
+}
+
+.user-order-card__footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--eshop-text-xs);
+  color: var(--eshop-neutral-500);
+}

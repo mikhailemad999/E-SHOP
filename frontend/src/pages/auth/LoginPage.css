@@ -1,0 +1,106 @@
+/* Login Page & Fast Account Selector Styles */
+
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 160px);
+  padding: var(--eshop-space-8) var(--eshop-space-4);
+}
+
+.login-card {
+  background: var(--eshop-neutral-0);
+  border: 1px solid var(--eshop-neutral-100);
+  border-radius: var(--eshop-radius-2xl);
+  padding: var(--eshop-space-8);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--eshop-shadow-xl);
+}
+
+.login-card__header {
+  text-align: center;
+  margin-bottom: var(--eshop-space-6);
+}
+
+.login-card__header h1 {
+  font-size: var(--eshop-text-2xl);
+}
+
+.login-card__header p {
+  color: var(--eshop-neutral-500);
+  font-size: var(--eshop-text-sm);
+  margin-top: 2px;
+}
+
+.fast-login-box {
+  background: var(--eshop-neutral-50);
+  border: 1px dashed var(--eshop-primary-300);
+  border-radius: var(--eshop-radius-lg);
+  padding: var(--eshop-space-4);
+  margin-bottom: var(--eshop-space-6);
+}
+
+.fast-login-box h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--eshop-space-2);
+  font-size: var(--eshop-text-xs);
+  text-transform: uppercase;
+  color: var(--eshop-primary-700);
+  margin-bottom: var(--eshop-space-3);
+  letter-spacing: 0.5px;
+}
+
+.fast-login-btns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eshop-space-2);
+}
+
+.fast-login-btn {
+  background: var(--eshop-neutral-0);
+  border: 1px solid var(--eshop-neutral-200);
+  border-radius: var(--eshop-radius-md);
+  padding: var(--eshop-space-2) var(--eshop-space-3);
+  font-size: var(--eshop-text-xs);
+  color: var(--eshop-neutral-800);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--eshop-duration-fast) var(--eshop-ease-default);
+}
+
+.fast-login-btn:hover {
+  border-color: var(--eshop-primary-400);
+  background: var(--eshop-primary-50);
+  color: var(--eshop-primary-700);
+}
+
+.login-card__error {
+  background: var(--eshop-accent-50);
+  border: 1px solid var(--eshop-accent-200);
+  color: var(--eshop-accent-700);
+  padding: var(--eshop-space-3);
+  border-radius: var(--eshop-radius-md);
+  font-size: var(--eshop-text-sm);
+  margin-bottom: var(--eshop-space-4);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eshop-space-4);
+}
+
+.login-card__footer {
+  text-align: center;
+  margin-top: var(--eshop-space-6);
+  font-size: var(--eshop-text-sm);
+  color: var(--eshop-neutral-500);
+}
+
+.login-card__footer a {
+  color: var(--eshop-primary-600);
+  font-weight: var(--eshop-weight-semibold);
+  text-decoration: none;
+}

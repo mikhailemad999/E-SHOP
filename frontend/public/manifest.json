@@ -1,0 +1,17 @@
+{
+  "name": "E-Shop Multi-Vendor Marketplace",
+  "short_name": "E-Shop",
+  "description": "Discover products from verified sellers with fast delivery and buyer protection.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

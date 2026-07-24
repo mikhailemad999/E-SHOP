@@ -1,0 +1,39 @@
+/* Skeleton Loading Styles */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--eshop-neutral-200) 25%,
+    var(--eshop-neutral-100) 50%,
+    var(--eshop-neutral-200) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease infinite;
+}
+
+.skeleton--sm { border-radius: var(--eshop-radius-sm); }
+.skeleton--md { border-radius: var(--eshop-radius-md); }
+.skeleton--lg { border-radius: var(--eshop-radius-lg); }
+.skeleton--full { border-radius: var(--eshop-radius-full); }
+
+.skeleton-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eshop-space-2);
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eshop-space-3);
+  padding: var(--eshop-space-3);
+  background: var(--eshop-neutral-0);
+  border-radius: var(--eshop-radius-xl);
+  border: 1px solid var(--eshop-neutral-100);
+}
+
+.skeleton-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eshop-space-2);
+}
