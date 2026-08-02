@@ -28,7 +28,7 @@ class PlatformStatsView(APIView):
     def get(self, request):
         total_users = User.objects.count()
         total_listings = Listing.objects.filter(status=Listing.Status.LIVE).count()
-        pending_moderation = Listing.objects.filter(status=Listing.Status.PENDING).count()
+        pending_moderation = Listing.objects.filter(status=Listing.Status.PENDING_REVIEW).count()
         total_orders = Order.objects.count()
 
         gross_sales_agg = Order.objects.aggregate(total=Sum("total_amount"))["total"] or 0
