@@ -50,12 +50,9 @@ export default function Header() {
           />
         </form>
 
-        {/* Navigation Quick Links */}
+        {/* Customer Navigation Links */}
         <div className="header__nav-links">
-          <Link to="/search" className="header__nav-link">Catalog</Link>
-          <Link to="/seller/dashboard" className="header__nav-link">Seller Center</Link>
-          <Link to="/delivery/manager" className="header__nav-link">Delivery Manager</Link>
-          <Link to="/delivery/agent" className="header__nav-link">Delivery Agent</Link>
+          <Link to="/search" className="header__nav-link">Explore Catalog</Link>
         </div>
 
         {/* Actions */}
@@ -109,11 +106,8 @@ export default function Header() {
             />
           </form>
           <div className="header__mobile-links">
-            <Link to="/search" onClick={() => setMobileMenuOpen(false)}>Catalog</Link>
+            <Link to="/search" onClick={() => setMobileMenuOpen(false)}>Explore Catalog</Link>
             <Link to="/cart" onClick={() => setMobileMenuOpen(false)}>Shopping Cart ({cartItemCount})</Link>
-            <Link to="/seller/dashboard" onClick={() => setMobileMenuOpen(false)}>Seller Dashboard</Link>
-            <Link to="/delivery/manager" onClick={() => setMobileMenuOpen(false)}>Delivery Manager</Link>
-            <Link to="/delivery/agent" onClick={() => setMobileMenuOpen(false)}>Delivery Agent</Link>
             <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>My Profile</Link>
           </div>
         </div>

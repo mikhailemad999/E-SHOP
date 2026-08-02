@@ -10,6 +10,13 @@ import Badge from '../../components/atoms/Badge';
 import './AdminDashboard.css';
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    total_users: 24,
+    total_listings: 129,
+    pending_moderation: 2,
+    total_orders: 0,
+    gross_sales: 0,
+  });
   const [moderationQueue, setModerationQueue] = useState([
     {
       id: 201,
@@ -27,6 +34,16 @@ export default function AdminDashboard() {
     },
   ]);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    api.get('/stats/')
+      .then(({ data }) => {
+        setStats(data);
+      })
+      .catch((err) => {
+        console.warn('Stats API unavailable, using fallback metrics', err);
+      });
+  }, []);
 
   const handleModerate = (id, action) => {
     setMessage(`Listing #${id} ${action === 'approve' ? 'APPROVED' : 'REJECTED'} live in MySQL database!`);
@@ -50,21 +67,21 @@ export default function AdminDashboard() {
           <Users className="stat-card__icon text-primary" />
           <div className="stat-card__content">
             <span className="stat-card__label">Total Registered Users</span>
-            <span className="stat-card__value">24</span>
+            <span className="stat-card__value">{stats.total_users}</span>
           </div>
         </div>
         <div className="stat-card">
           <ShoppingBag className="stat-card__icon text-success" />
           <div className="stat-card__content">
             <span className="stat-card__label">Total Live Listings</span>
-            <span className="stat-card__value">129</span>
+            <span className="stat-card__value">{stats.total_listings}</span>
           </div>
         </div>
         <div className="stat-card">
           <Shield className="stat-card__icon text-accent" />
           <div className="stat-card__content">
             <span className="stat-card__label">Pending Moderation</span>
-            <span className="stat-card__value">{moderationQueue.length}</span>
+            <span className="stat-card__value">{stats.pending_moderation || moderationQueue.length}</span>
           </div>
         </div>
       </div>

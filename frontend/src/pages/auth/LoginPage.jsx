@@ -10,16 +10,17 @@ import Input from '../../components/atoms/Input';
 import './LoginPage.css';
 
 const DEMO_ACCOUNTS = [
-  { role: 'Seller (TechWorld)', username: 'seller_techworld', pass: 'SellerPass123!', redirect: '/seller/dashboard' },
-  { role: 'Delivery Manager 1', username: 'manager1', pass: 'ManagerPass123!', redirect: '/delivery/manager' },
-  { role: 'Delivery Agent 1', username: 'agent1_1', pass: 'AgentPass123!', redirect: '/delivery/agent' },
-  { role: 'Customer 1', username: 'customer1', pass: 'CustomerPass123!', redirect: '/' },
-  { role: 'Super Admin', username: 'superadmin', pass: 'SuperAdmin123!', redirect: '/admin/dashboard' },
+  { role: '👑 Super Admin', username: 'superadmin', pass: 'SuperAdmin123!', redirect: '/admin' },
+  { role: '🛡️ System Admin', username: 'admin1', pass: 'AdminPass123!', redirect: '/admin' },
+  { role: '🏪 Seller (TechWorld)', username: 'seller_techworld', pass: 'SellerPass123!', redirect: '/seller' },
+  { role: '🚚 Delivery Manager', username: 'manager1', pass: 'ManagerPass123!', redirect: '/delivery' },
+  { role: '🛵 Delivery Agent', username: 'agent1_1', pass: 'AgentPass123!', redirect: '/delivery/agent' },
+  { role: '🛍️ Customer 1', username: 'customer1', pass: 'CustomerPass123!', redirect: '/' },
 ];
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
-  const redirectPath = searchParams.get('redirect') || '/';
+  const explicitRedirect = searchParams.get('redirect');
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -28,13 +29,32 @@ export default function LoginPage() {
   const { login, error } = useAuthStore();
   const navigate = useNavigate();
 
+  const getRoleDefaultPath = (role) => {
+    switch (role) {
+      case 'SUPER_ADMIN':
+      case 'ADMIN':
+        return '/admin';
+      case 'SELLER':
+        return '/seller';
+      case 'DELIVERY_MANAGER':
+        return '/delivery';
+      case 'DELIVERY_AGENT':
+        return '/delivery/agent';
+      default:
+        return '/';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     const success = await login(username, password);
     setLoading(false);
+
     if (success) {
-      navigate(redirectPath);
+      const loggedUser = useAuthStore.getState().user;
+      const targetPath = explicitRedirect || getRoleDefaultPath(loggedUser?.role);
+      navigate(targetPath);
     }
   };
 
@@ -45,7 +65,7 @@ export default function LoginPage() {
     const success = await login(account.username, account.pass);
     setLoading(false);
     if (success) {
-      navigate(account.redirect || redirectPath);
+      navigate(account.redirect);
     }
   };
 

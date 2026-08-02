@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Trash2, ArrowRight, ShieldCheck, CreditCard, DollarSign, CheckCircle } from 'lucide-react';
+import api from '../../api/client';
 import { useCartStore } from '../../stores/cartStore';
 import { useAuthStore } from '../../stores/authStore';
 import Button from '../../components/atoms/Button';
@@ -14,12 +15,14 @@ import './CartPage.css';
 
 export default function CartPage() {
   const { items, removeItem, addItem, clearCart, getTotalPrice } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
 
   const [paymentMethod, setPaymentMethod] = useState('VISA');
   const [createdOrder, setCreatedOrder] = useState(null);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
 
   const subtotal = getTotalPrice();
   const shippingFee = subtotal > 0 ? 15.0 : 0.0;
@@ -34,29 +37,60 @@ export default function CartPage() {
     }
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!isAuthenticated) {
       navigate('/login?redirect=/cart');
       return;
     }
 
-    const orderObj = {
-      id: Date.now(),
-      tracking_number: `TRK-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
-      created_at: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-      customer_name: 'Customer 1 Test',
-      customer_email: 'customer1@eshop.dev',
-      customer_phone: '+1 800 555 0001',
-      delivery_address: '101 Marketplace Blvd, New York, NY 10001',
-      items: items.map((i) => ({ title: i.title, sku: 'SKU-ITEM', quantity: i.quantity, price: i.price })),
-      price: subtotal.toFixed(2),
-      payment_method: paymentMethod,
-      shop_name: items[0]?.shop_name || 'E-Shop Marketplace',
+    setIsSubmitting(true);
+    setCheckoutError('');
+
+    const payload = {
+      payment_method: paymentMethod === 'VISA' ? 'card' : 'cod',
+      shipping_address: {
+        full_name: user?.full_name || 'Valued Customer',
+        phone: user?.phone || '+1 800 555 0199',
+        address_line1: '101 Marketplace Blvd',
+        city: 'New York',
+        state: 'NY',
+        postal_code: '10001',
+        country: 'USA',
+      },
+      items: items.map((i) => ({
+        listing_id: i.listing_id || i.id,
+        quantity: i.quantity,
+      })),
     };
 
-    setCreatedOrder(orderObj);
-    setCheckoutSuccess(true);
-    clearCart();
+    try {
+      const { data } = await api.post('/checkout/', payload);
+      const backendOrder = data.order || {};
+
+      const formattedOrder = {
+        id: backendOrder.id || Date.now(),
+        tracking_number: backendOrder.order_number || `TRK-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
+        created_at: new Date(backendOrder.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+        customer_name: user?.full_name || 'Valued Customer',
+        customer_email: user?.email || 'customer@eshop.dev',
+        customer_phone: user?.phone || '+1 800 555 0199',
+        delivery_address: '101 Marketplace Blvd, New York, NY 10001',
+        items: items.map((i) => ({ title: i.title, sku: i.sku || 'SKU-ITEM', quantity: i.quantity, price: i.price })),
+        price: backendOrder.total_amount ? String(backendOrder.total_amount) : subtotal.toFixed(2),
+        payment_method: paymentMethod,
+        shop_name: items[0]?.shop_name || 'E-Shop Marketplace',
+      };
+
+      setCreatedOrder(formattedOrder);
+      setCheckoutSuccess(true);
+      clearCart();
+    } catch (err) {
+      console.error('Checkout error:', err);
+      const errDetail = err.response?.data?.error || err.response?.data?.detail || 'Failed to process checkout. Please try again.';
+      setCheckoutError(errDetail);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (checkoutSuccess && createdOrder) {
@@ -175,8 +209,14 @@ export default function CartPage() {
             <span>${grandTotal.toFixed(2)}</span>
           </div>
 
-          <Button variant="primary" size="lg" className="checkout-btn" onClick={handleCheckout}>
-            Proceed to Checkout
+          {checkoutError && (
+            <div className="cart-checkout-error alert alert-danger" style={{ color: '#ef4444', marginBottom: '12px', fontSize: '0.9rem' }}>
+              {checkoutError}
+            </div>
+          )}
+
+          <Button variant="primary" size="lg" className="checkout-btn" onClick={handleCheckout} disabled={isSubmitting}>
+            {isSubmitting ? 'Processing Order...' : 'Proceed to Checkout'}
             <ArrowRight size={18} style={{ marginLeft: '8px' }} />
           </Button>
 

@@ -1,2 +1,6 @@
 from django.urls import path
-urlpatterns = []
+from .views import PlatformStatsView
+
+urlpatterns = [
+    path("", PlatformStatsView.as_view(), name="platform-stats"),
+]

@@ -17,3 +17,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # ─── Storage (local filesystem for dev) ──────────────────────────
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
+# ─── Celery (synchronous offline execution for dev) ─────────────
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True

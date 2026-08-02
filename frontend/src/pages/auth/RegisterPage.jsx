@@ -1,14 +1,24 @@
 /**
- * RegisterPage — Customer or Seller self-registration.
+ * RegisterPage — Universal multi-role self-registration.
+ * Allows creating Buyer, Seller, Delivery Manager, Delivery Agent, Admin, or Super Admin accounts.
  */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Phone, Building2 } from 'lucide-react';
+import { Mail, Lock, User, Phone, Building2, Shield, Truck, Crown } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import api from '../../api/client';
 import Button from '../../components/atoms/Button';
 import Input from '../../components/atoms/Input';
 import './AuthPages.css';
+
+const ROLES = [
+  { id: 'customer', label: 'Buyer / Customer', icon: User },
+  { id: 'seller', label: 'Seller Store', icon: Building2 },
+  { id: 'delivery_manager', label: 'Delivery Manager', icon: Truck },
+  { id: 'delivery_agent', label: 'Delivery Agent', icon: Truck },
+  { id: 'admin', label: 'System Admin', icon: Shield },
+  { id: 'super_admin', label: 'Super Admin', icon: Crown },
+];
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -45,6 +55,22 @@ export default function RegisterPage() {
     return Object.keys(e).length === 0;
   };
 
+  const getTargetDashboard = (roleStr) => {
+    switch (roleStr) {
+      case 'super_admin':
+      case 'admin':
+        return '/admin';
+      case 'seller':
+        return '/seller';
+      case 'delivery_manager':
+        return '/delivery';
+      case 'delivery_agent':
+        return '/delivery/agent';
+      default:
+        return '/';
+    }
+  };
+
   const handleSubmit = async (ev) => {
     ev.preventDefault();
     if (!validate()) return;
@@ -53,14 +79,19 @@ export default function RegisterPage() {
     setApiError('');
 
     try {
-      const endpoint = role === 'seller'
-        ? '/auth/register/seller/'
-        : '/auth/register/customer/';
+      // POST to Universal Registration endpoint
+      await api.post('/auth/register/', { ...form, role });
+      
+      // Perform immediate login to establish session
+      const loginSuccess = await login(form.username, form.password);
 
-      const { data } = await api.post(endpoint, form);
-      login(data.user, data.tokens);
-      navigate(role === 'seller' ? '/seller/dashboard' : '/');
+      if (loginSuccess) {
+        navigate(getTargetDashboard(role));
+      } else {
+        navigate('/login');
+      }
     } catch (err) {
+      console.error('Registration API Error:', err);
       const detail = err.response?.data;
       if (typeof detail === 'object' && detail !== null) {
         const fieldErrors = {};
@@ -69,7 +100,7 @@ export default function RegisterPage() {
         });
         setErrors(fieldErrors);
       } else {
-        setApiError('Registration failed. Please try again.');
+        setApiError('Registration failed. Please verify your fields.');
       }
     } finally {
       setIsLoading(false);
@@ -84,28 +115,40 @@ export default function RegisterPage() {
             <span className="auth-page__logo-icon">◆</span>
             <span className="auth-page__logo-text">E-Shop</span>
           </Link>
-          <h1 className="auth-page__title">Create your account</h1>
-          <p className="auth-page__subtitle">Join thousands of buyers and sellers</p>
+          <h1 className="auth-page__title">Create Your Account</h1>
+          <p className="auth-page__subtitle">Select your account type to register in the database</p>
         </div>
 
-        {/* Role Toggle */}
-        <div className="auth-page__role-toggle">
-          <button
-            type="button"
-            className={`auth-page__role-btn ${role === 'customer' ? 'auth-page__role-btn--active' : ''}`}
-            onClick={() => setRole('customer')}
-          >
-            <User size={18} />
-            I'm a Buyer
-          </button>
-          <button
-            type="button"
-            className={`auth-page__role-btn ${role === 'seller' ? 'auth-page__role-btn--active' : ''}`}
-            onClick={() => setRole('seller')}
-          >
-            <Building2 size={18} />
-            I'm a Seller
-          </button>
+        {/* Multi-Role Selector */}
+        <div className="auth-page__role-selector" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '20px' }}>
+          {ROLES.map((r) => {
+            const Icon = r.icon;
+            const isActive = role === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                className={`auth-page__role-btn ${isActive ? 'auth-page__role-btn--active' : ''}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: isActive ? '2px solid var(--eshop-primary-600)' : '1px solid #e2e8f0',
+                  background: isActive ? 'var(--eshop-primary-50)' : '#ffffff',
+                  color: isActive ? 'var(--eshop-primary-700)' : '#475569',
+                  fontWeight: isActive ? 'bold' : 'normal',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem'
+                }}
+                onClick={() => setRole(r.id)}
+              >
+                <Icon size={16} />
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {apiError && (
@@ -119,7 +162,7 @@ export default function RegisterPage() {
             <Input
               label="First Name"
               name="first_name"
-              placeholder="John"
+              placeholder="Jane"
               value={form.first_name}
               onChange={handleChange}
               error={errors.first_name}
@@ -127,16 +170,16 @@ export default function RegisterPage() {
             <Input
               label="Last Name"
               name="last_name"
-              placeholder="Doe"
+              placeholder="Smith"
               value={form.last_name}
               onChange={handleChange}
               error={errors.last_name}
             />
           </div>
           <Input
-            label="Username"
+            label="Username *"
             name="username"
-            placeholder="johndoe"
+            placeholder="janesmith"
             value={form.username}
             onChange={handleChange}
             error={errors.username}
@@ -144,10 +187,10 @@ export default function RegisterPage() {
             required
           />
           <Input
-            label="Email"
+            label="Email Address *"
             name="email"
             type="email"
-            placeholder="john@example.com"
+            placeholder="jane@example.com"
             value={form.email}
             onChange={handleChange}
             error={errors.email}
@@ -155,10 +198,10 @@ export default function RegisterPage() {
             required
           />
           <Input
-            label="Phone"
+            label="Phone Number"
             name="phone"
             type="tel"
-            placeholder="+1 234 567 8900"
+            placeholder="+1 800 555 0199"
             value={form.phone}
             onChange={handleChange}
             error={errors.phone}
@@ -167,9 +210,9 @@ export default function RegisterPage() {
 
           {role === 'seller' && (
             <Input
-              label="Business Name"
+              label="Store / Business Name *"
               name="business_name"
-              placeholder="Your store name"
+              placeholder="e.g. Apex Tech Store"
               value={form.business_name}
               onChange={handleChange}
               error={errors.business_name}
@@ -179,7 +222,7 @@ export default function RegisterPage() {
 
           <div className="auth-page__form-row">
             <Input
-              label="Password"
+              label="Password *"
               name="password"
               type="password"
               placeholder="Min. 8 characters"
@@ -190,7 +233,7 @@ export default function RegisterPage() {
               required
             />
             <Input
-              label="Confirm Password"
+              label="Confirm Password *"
               name="password_confirm"
               type="password"
               placeholder="Re-enter password"
@@ -209,14 +252,14 @@ export default function RegisterPage() {
             size="lg"
             isLoading={isLoading}
           >
-            {role === 'seller' ? 'Create Seller Account' : 'Create Account'}
+            Create {ROLES.find(r => r.id === role)?.label} Account
           </Button>
         </form>
 
         <div className="auth-page__footer">
           <p>
             Already have an account?{' '}
-            <Link to="/login" className="auth-page__link">Sign in</Link>
+            <Link to="/login" className="auth-page__link">Sign in to your account</Link>
           </p>
         </div>
       </div>

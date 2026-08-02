@@ -94,12 +94,22 @@ class CheckoutView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        try:
-            cart = Cart.objects.get(customer=request.user)
-        except Cart.DoesNotExist:
-            return Response({"error": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
-
+        cart, _ = Cart.objects.get_or_create(customer=request.user)
         cart_items = cart.items.select_related("listing__shop", "listing__product").all()
+
+        # If DB cart is empty, populate from request items array if provided
+        if not cart_items.exists() and request.data.get("items"):
+            for raw_item in request.data.get("items", []):
+                lid = raw_item.get("listing_id") or raw_item.get("id")
+                qty = raw_item.get("quantity", 1)
+                if lid:
+                    try:
+                        listing_obj = Listing.objects.get(id=lid, status=Listing.Status.LIVE)
+                        CartItem.objects.create(cart=cart, listing=listing_obj, quantity=qty)
+                    except Listing.DoesNotExist:
+                        continue
+            cart_items = cart.items.select_related("listing__shop", "listing__product").all()
+
         if not cart_items.exists():
             return Response({"error": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
 

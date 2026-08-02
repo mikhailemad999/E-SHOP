@@ -55,28 +55,62 @@ export default function TrackingPage() {
       .catch(() => setError('Tracking number not found.'));
   }, [trackingNumber]);
 
-  // Connect to Django Channels WebSocket
+  // Connect to Django Channels WebSocket with HTTP polling fallback
   useEffect(() => {
     if (!trackingNumber) return;
 
-    const wsUrl = `ws://${window.location.hostname}:8000/ws/delivery/${trackingNumber}/`;
-    const socket = new WebSocket(wsUrl);
+    let socket = null;
+    let pollInterval = null;
 
-    socket.onopen = () => setWsStatus('connected');
-    socket.onclose = () => setWsStatus('disconnected');
-    socket.onerror = () => setWsStatus('error');
+    try {
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${wsProtocol}//${window.location.hostname}:8000/ws/delivery/${trackingNumber}/`;
+      socket = new WebSocket(wsUrl);
 
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'location_update') {
-        setAgentLocation([parseFloat(data.lat), parseFloat(data.lng)]);
-        if (data.status) {
-          setAssignment((prev) => prev ? { ...prev, status: data.status } : prev);
+      socket.onopen = () => setWsStatus('connected');
+      socket.onclose = () => {
+        setWsStatus('disconnected');
+        startFallbackPolling();
+      };
+      socket.onerror = () => {
+        setWsStatus('offline fallback');
+        startFallbackPolling();
+      };
+
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'location_update') {
+          setAgentLocation([parseFloat(data.lat), parseFloat(data.lng)]);
+          if (data.status) {
+            setAssignment((prev) => (prev ? { ...prev, status: data.status } : prev));
+          }
         }
-      }
-    };
+      };
+    } catch {
+      setWsStatus('offline fallback');
+      startFallbackPolling();
+    }
 
-    return () => socket.close();
+    function startFallbackPolling() {
+      if (pollInterval) return;
+      pollInterval = setInterval(() => {
+        api.get(`/delivery/track/${trackingNumber}/`)
+          .then(({ data }) => {
+            if (data.latest_ping) {
+              setAgentLocation([parseFloat(data.latest_ping.lat), parseFloat(data.latest_ping.lng)]);
+            }
+            if (data.status) {
+              setAssignment((prev) => (prev ? { ...prev, status: data.status } : prev));
+            }
+          })
+          .catch(() => {});
+      }, 10000);
+    }
+
+    return () => {
+      if (socket) socket.close();
+      if (pollInterval) clearInterval(pollInterval);
+    };
   }, [trackingNumber]);
 
   if (error) {

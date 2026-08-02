@@ -48,12 +48,48 @@ export default function App() {
           }
         />
 
-        {/* Protected Dashboard routes requiring login */}
+        {/* Dedicated Admin Route */}
+        <Route
+          path="admin"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Dedicated Seller Route */}
+        <Route
+          path="seller"
+          element={
+            <ProtectedRoute allowedRoles={['SELLER', 'SUPER_ADMIN']}>
+              <SellerDashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="seller/dashboard"
           element={
             <ProtectedRoute allowedRoles={['SELLER', 'SUPER_ADMIN']}>
               <SellerDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Dedicated Delivery Routes */}
+        <Route
+          path="delivery"
+          element={
+            <ProtectedRoute allowedRoles={['DELIVERY_MANAGER', 'SUPER_ADMIN']}>
+              <DeliveryManagerDashboard />
             </ProtectedRoute>
           }
         />
@@ -70,14 +106,6 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={['DELIVERY_AGENT', 'SUPER_ADMIN']}>
               <DeliveryAgentDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="admin/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
-              <AdminDashboard />
             </ProtectedRoute>
           }
         />

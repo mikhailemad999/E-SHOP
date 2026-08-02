@@ -8,9 +8,11 @@ from apps.accounts.views import (
     CustomTokenRefreshView,
     LogoutView,
     SellerRegistrationView,
+    UniversalRegistrationView,
 )
 
 urlpatterns = [
+    path("register/", UniversalRegistrationView.as_view(), name="register-universal"),
     path("register/customer/", CustomerRegistrationView.as_view(), name="register-customer"),
     path("register/seller/", SellerRegistrationView.as_view(), name="register-seller"),
     path("login/", CustomTokenObtainPairView.as_view(), name="token-obtain-pair"),

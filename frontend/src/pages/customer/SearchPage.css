@@ -1,15 +1,21 @@
-/* Search Page & Category Filter Sidebar Styles */
+/* Search Page & Advanced Catalog Filtering Styles */
 
 .search-page {
   padding: var(--eshop-space-8) var(--eshop-space-4);
 }
 
 .search-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--eshop-space-4);
   margin-bottom: var(--eshop-space-8);
 }
 
 .search-page__header h1 {
   font-size: var(--eshop-text-3xl);
+  color: var(--eshop-neutral-900);
 }
 
 .search-page__header p {
@@ -18,9 +24,52 @@
   margin-top: var(--eshop-space-1);
 }
 
+/* Header Inline Search Bar */
+.search-bar-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--eshop-space-2);
+  background: var(--eshop-neutral-0);
+  border: 1px solid var(--eshop-neutral-200);
+  border-radius: var(--eshop-radius-xl);
+  padding: var(--eshop-space-1) var(--eshop-space-2);
+  box-shadow: var(--eshop-shadow-sm);
+}
+
+.search-bar-inline__icon {
+  color: var(--eshop-neutral-400);
+  margin-left: var(--eshop-space-2);
+}
+
+.search-bar-inline__input {
+  border: none;
+  outline: none;
+  font-size: var(--eshop-text-sm);
+  padding: var(--eshop-space-2);
+  width: 240px;
+  background: transparent;
+}
+
+/* Toast */
+.search-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  background: var(--eshop-neutral-900);
+  color: var(--eshop-neutral-0);
+  padding: 12px 20px;
+  border-radius: var(--eshop-radius-lg);
+  box-shadow: var(--eshop-shadow-xl);
+  font-weight: var(--eshop-weight-medium);
+}
+
+/* Layout */
 .search-page__layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 280px 1fr;
   gap: var(--eshop-space-8);
 }
 
@@ -83,6 +132,100 @@
   background: var(--eshop-primary-50);
   color: var(--eshop-primary-700);
   font-weight: var(--eshop-weight-bold);
+}
+
+/* Price Filter Inputs & Presets */
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: var(--eshop-space-2);
+  margin-bottom: var(--eshop-space-3);
+}
+
+.price-input {
+  width: 100%;
+  padding: var(--eshop-space-2) var(--eshop-space-3);
+  border: 1px solid var(--eshop-neutral-200);
+  border-radius: var(--eshop-radius-md);
+  font-size: var(--eshop-text-sm);
+  outline: none;
+}
+
+.price-input:focus {
+  border-color: var(--eshop-primary-500);
+}
+
+.price-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--eshop-space-2);
+}
+
+.price-preset-chip {
+  background: var(--eshop-neutral-50);
+  border: 1px solid var(--eshop-neutral-200);
+  border-radius: var(--eshop-radius-full);
+  padding: 4px 10px;
+  font-size: var(--eshop-text-xs);
+  color: var(--eshop-neutral-700);
+  cursor: pointer;
+  transition: all var(--eshop-duration-fast);
+}
+
+.price-preset-chip:hover {
+  background: var(--eshop-primary-50);
+  color: var(--eshop-primary-600);
+}
+
+.price-preset-chip.active {
+  background: var(--eshop-primary-600);
+  color: white;
+  border-color: var(--eshop-primary-600);
+}
+
+.reset-filters-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Sort Bar */
+.search-sort-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--eshop-neutral-0);
+  border: 1px solid var(--eshop-neutral-100);
+  border-radius: var(--eshop-radius-xl);
+  padding: var(--eshop-space-3) var(--eshop-space-5);
+  margin-bottom: var(--eshop-space-6);
+}
+
+.search-sort-bar__count {
+  font-size: var(--eshop-text-sm);
+  color: var(--eshop-neutral-600);
+}
+
+.search-sort-bar__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--eshop-space-2);
+}
+
+.sort-label {
+  font-size: var(--eshop-text-xs);
+  font-weight: var(--eshop-weight-semibold);
+  color: var(--eshop-neutral-500);
+  text-transform: uppercase;
+}
+
+.sort-select {
+  padding: var(--eshop-space-2) var(--eshop-space-3);
+  border: 1px solid var(--eshop-neutral-200);
+  border-radius: var(--eshop-radius-md);
+  font-size: var(--eshop-text-sm);
+  background: var(--eshop-neutral-0);
+  outline: none;
+  cursor: pointer;
 }
 
 .search-page__empty {

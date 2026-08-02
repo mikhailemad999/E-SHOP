@@ -81,6 +81,13 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         useAuthStore.getState().logout();
+        
+        // If it's a GET request to a public endpoint, retry without Authorization header
+        if (originalRequest.method?.toUpperCase() === 'GET') {
+          delete originalRequest.headers.Authorization;
+          return api(originalRequest);
+        }
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
