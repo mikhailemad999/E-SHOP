@@ -47,6 +47,10 @@ This document outlines all resolved issues, new feature implementations, and tes
     - **Coverage**: Built 14 comprehensive integration and unit tests in `backend/tests/` covering Accounts, Catalog, Orders & Checkout, Shipping & Tracking, Notifications, and Favorites/Reviews.
     - **Results**: 100% pass rate (`Ran 14 tests in 15.7s — OK`).
 
+13. **Product Image Loading & Smart Fallbacks**:
+    - **Issue**: `HomePage.jsx` checked `product.image` instead of `product.featured_image`, displaying fallback laptop placeholder icons. Also, 5 seed URLs returned HTTP 404, showing broken image icons on certain products.
+    - **Fix**: Updated `seed_data.py` with verified URLs and fixed 14 database records in MySQL. Created `imageFallback.js` utility with category-aware fallback images and added `onError` auto-recovery handlers across `HomePage`, `SearchPage`, `ProductDetailPage`, `WishlistPage`, and `CartPage`.
+
 ---
 
 ## 🎯 Production Status Summary

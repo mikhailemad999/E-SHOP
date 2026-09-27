@@ -11,6 +11,7 @@ import Button from '../../components/atoms/Button';
 import Badge from '../../components/atoms/Badge';
 import { SkeletonCard } from '../../components/atoms/Skeleton';
 import { useCartStore } from '../../stores/cartStore';
+import { getProductImage, handleImageError } from '../../utils/imageFallback';
 import './SearchPage.css';
 
 const CATEGORIES = [
@@ -297,13 +298,13 @@ export default function SearchPage() {
               {filteredProducts.map((prod) => (
                 <div key={prod.id} className="product-card">
                   <div className="product-card__image-wrap">
-                    {prod.featured_image ? (
-                      <img src={prod.featured_image} alt={prod.title} className="product-card__image" />
-                    ) : (
-                      <div className="product-card__placeholder">
-                        <ShoppingBag size={32} />
-                      </div>
-                    )}
+                    <img
+                      src={getProductImage(prod)}
+                      alt={prod.title}
+                      className="product-card__image"
+                      loading="lazy"
+                      onError={(e) => handleImageError(e, prod.category_name)}
+                    />
                     <Badge variant="primary" className="product-card__badge">
                       {prod.category_name || 'Featured'}
                     </Badge>

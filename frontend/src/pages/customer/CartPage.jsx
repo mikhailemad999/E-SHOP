@@ -11,6 +11,7 @@ import { useAuthStore } from '../../stores/authStore';
 import Button from '../../components/atoms/Button';
 import Badge from '../../components/atoms/Badge';
 import ReceiptModal from '../../components/molecules/ReceiptModal';
+import { handleImageError } from '../../utils/imageFallback';
 import './CartPage.css';
 
 export default function CartPage() {
@@ -139,7 +140,12 @@ export default function CartPage() {
         <div className="cart-items-list">
           {items.map((item) => (
             <div key={item.listing_id} className="cart-item-card">
-              <img src={item.image} alt={item.title} className="cart-item__img" />
+              <img
+                src={item.image}
+                alt={item.title}
+                className="cart-item__img"
+                onError={(e) => handleImageError(e, '')}
+              />
               <div className="cart-item__info">
                 <h3>{item.title}</h3>
                 <span className="cart-item__seller">Seller: {item.shop_name}</span>

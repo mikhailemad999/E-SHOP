@@ -13,6 +13,7 @@ import Button from '../../components/atoms/Button';
 import Badge from '../../components/atoms/Badge';
 import { SkeletonCard } from '../../components/atoms/Skeleton';
 import { useCartStore } from '../../stores/cartStore';
+import { getProductImage, handleImageError } from '../../utils/imageFallback';
 import axios from 'axios';
 import './HomePage.css';
 
@@ -232,18 +233,13 @@ export default function HomePage() {
                   className="product-card"
                 >
                   <div className="product-card__image-wrap">
-                    {product.image ? (
-                      <img
-                        src={product.image}
-                        alt={product.title}
-                        className="product-card__img"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="product-card__img-placeholder">
-                        <Laptop size={40} />
-                      </div>
-                    )}
+                    <img
+                      src={getProductImage(product)}
+                      alt={product.title}
+                      className="product-card__img"
+                      loading="lazy"
+                      onError={(e) => handleImageError(e, product.category_name)}
+                    />
                     <Badge variant="primary" className="product-card__badge">
                       {product.category_name || 'Trending'}
                     </Badge>

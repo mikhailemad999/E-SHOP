@@ -10,6 +10,7 @@ import api from '../../api/client';
 import Button from '../../components/atoms/Button';
 import Badge from '../../components/atoms/Badge';
 import { useCartStore } from '../../stores/cartStore';
+import { handleImageError } from '../../utils/imageFallback';
 import './ProductDetailPage.css';
 
 export default function ProductDetailPage() {
@@ -185,7 +186,12 @@ export default function ProductDetailPage() {
         {/* Left: Product Images Gallery */}
         <div className="product-detail__gallery">
           <div className="product-detail__main-img-wrap">
-            <img src={activeImage} alt={product.title} className="product-detail__main-img" />
+            <img
+              src={activeImage}
+              alt={product.title}
+              className="product-detail__main-img"
+              onError={(e) => handleImageError(e, product.category_name)}
+            />
           </div>
           {selectedOffer?.images && selectedOffer.images.length > 1 && (
             <div className="product-detail__thumbnails">
@@ -196,6 +202,7 @@ export default function ProductDetailPage() {
                   alt={`Thumbnail ${idx}`}
                   className={`thumbnail ${activeImage === img.image ? 'active' : ''}`}
                   onClick={() => setActiveImage(img.image)}
+                  onError={(e) => handleImageError(e, product.category_name)}
                 />
               ))}
             </div>

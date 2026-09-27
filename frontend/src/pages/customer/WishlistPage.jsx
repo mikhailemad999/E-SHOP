@@ -9,6 +9,7 @@ import api from '../../api/client';
 import Button from '../../components/atoms/Button';
 import Badge from '../../components/atoms/Badge';
 import { useCartStore } from '../../stores/cartStore';
+import { handleImageError } from '../../utils/imageFallback';
 import './WishlistPage.css';
 
 export default function WishlistPage() {
@@ -91,7 +92,12 @@ export default function WishlistPage() {
             return (
               <div key={fav.id || listing.id} className="wishlist-card">
                 <div className="wishlist-card__image-wrap">
-                  <img src={img} alt={product.title || 'Product'} className="wishlist-card__image" />
+                  <img
+                    src={img}
+                    alt={product.title || 'Product'}
+                    className="wishlist-card__image"
+                    onError={(e) => handleImageError(e, product.category_name)}
+                  />
                   <button
                     className="wishlist-card__remove-btn"
                     onClick={() => handleRemove(listing.id)}
