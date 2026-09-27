@@ -14,6 +14,7 @@ import SearchPage from './pages/customer/SearchPage';
 import ProductDetailPage from './pages/customer/ProductDetailPage';
 import CartPage from './pages/customer/CartPage';
 import ProfilePage from './pages/customer/ProfilePage';
+import WishlistPage from './pages/customer/WishlistPage';
 import TrackingPage from './pages/customer/TrackingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="products/:slug" element={<ProductDetailPage />} />
         <Route path="products/:slug/" element={<ProductDetailPage />} />
         <Route path="cart" element={<CartPage />} />
+        <Route path="wishlist" element={<WishlistPage />} />
         <Route path="track/:trackingNumber" element={<TrackingPage />} />
 
         {/* Protected Customer Profile */}

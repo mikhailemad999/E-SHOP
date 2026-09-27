@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsDeliveryAgent, IsDeliveryManager
+from apps.notifications.models import Notification
 from .models import DeliveryAssignment, DeliveryLocationPing
 from .serializers import DeliveryAssignmentSerializer, DeliveryLocationPingSerializer
 
@@ -33,7 +34,7 @@ class AgentQueueView(generics.ListAPIView):
     def get_queryset(self):
         return DeliveryAssignment.objects.filter(
             agent=self.request.user
-        ).exclude(status=DeliveryAssignment.Status.DELIVERED).prefetch_related("location_pings")
+        ).exclude(status=DeliveryAssignment.Status.DELIVERED).prefetch_related("location_pings").order_by("-assigned_at")
 
 
 class DeliveryStatusUpdateView(APIView):
@@ -60,6 +61,29 @@ class DeliveryStatusUpdateView(APIView):
                     assignment.proof_image = proof_image
 
             assignment.save()
+
+            try:
+                customer = (
+                    assignment.suborder.order.customer
+                    if assignment.suborder
+                    else (assignment.order.customer if assignment.order else None)
+                )
+                if customer:
+                    notif_type = (
+                        Notification.Type.DELIVERY_COMPLETE
+                        if new_status == DeliveryAssignment.Status.DELIVERED
+                        else Notification.Type.SHIPMENT_UPDATE
+                    )
+                    Notification.objects.create(
+                        user=customer,
+                        type=notif_type,
+                        title=f"Delivery {new_status.replace('_', ' ').capitalize()}",
+                        message=f"Tracking #{assignment.tracking_number} status updated to {new_status.replace('_', ' ')}.",
+                        payload={"tracking_number": assignment.tracking_number, "status": new_status},
+                    )
+            except Exception:
+                pass
+
             return Response({"message": f"Delivery status updated to {new_status}."})
 
         return Response({"error": "Invalid status value."}, status=status.HTTP_400_BAD_REQUEST)

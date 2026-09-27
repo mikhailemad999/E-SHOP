@@ -28,6 +28,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data["role"] = self.user.role
         data["email"] = self.user.email
         data["user_id"] = self.user.id
+        data["user"] = {
+            "id": self.user.id,
+            "username": self.user.username,
+            "email": self.user.email,
+            "role": self.user.role,
+        }
         return data
 
 

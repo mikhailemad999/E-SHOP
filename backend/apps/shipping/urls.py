@@ -13,6 +13,8 @@ urlpatterns = [
     path("dispatch/", DispatchAssignmentCreateView.as_view(), name="dispatch-create"),
     path("agent/queue/", AgentQueueView.as_view(), name="agent-queue"),
     path("<str:tracking_number>/status/", DeliveryStatusUpdateView.as_view(), name="delivery-status-update"),
+    path("assignments/<str:tracking_number>/status/", DeliveryStatusUpdateView.as_view(), name="delivery-assignment-status"),
     path("ping/", LocationPingIngestView.as_view(), name="location-ping"),
     path("track/<str:tracking_number>/", CustomerTrackingDetailView.as_view(), name="customer-tracking"),
+    path("tracking/<str:tracking_number>/", CustomerTrackingDetailView.as_view(), name="customer-tracking-alias"),
 ]

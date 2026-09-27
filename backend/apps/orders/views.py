@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 from apps.accounts.models import Address
 from apps.accounts.permissions import IsCustomer, IsSeller
 from apps.catalog.models import Listing
+from apps.notifications.models import Notification
 from .models import Cart, CartItem, Order, ReturnRequest, SubOrder, SubOrderItem
 from .serializers import (
     CartItemSerializer,
@@ -183,6 +184,27 @@ class CheckoutView(APIView):
         # Clear cart
         cart.items.all().delete()
 
+        # Generate in-app notifications
+        try:
+            Notification.objects.create(
+                user=request.user,
+                type=Notification.Type.ORDER_PLACED,
+                title="Order Placed Successfully",
+                message=f"Your order #{order.order_number} for ${order.total_amount} has been placed.",
+                payload={"order_id": order.id, "order_number": order.order_number},
+            )
+            for shop, items in items_by_shop.items():
+                if shop.owner:
+                    Notification.objects.create(
+                        user=shop.owner,
+                        type=Notification.Type.ORDER_PLACED,
+                        title=f"New Order #{order.order_number}",
+                        message=f"New order received for shop '{shop.name}'.",
+                        payload={"order_number": order.order_number, "order_id": order.id},
+                    )
+        except Exception:
+            pass
+
         return Response(
             {
                 "message": "Order placed successfully.",
@@ -242,6 +264,16 @@ class SubOrderAcceptDenyView(APIView):
         if action == "accept":
             suborder.status = SubOrder.Status.ACCEPTED
             suborder.save()
+            try:
+                Notification.objects.create(
+                    user=suborder.order.customer,
+                    type=Notification.Type.ORDER_ACCEPTED,
+                    title="SubOrder Accepted",
+                    message=f"Shop '{suborder.shop.name}' accepted items in Order #{suborder.order.order_number}.",
+                    payload={"order_number": suborder.order.order_number, "suborder_id": suborder.id},
+                )
+            except Exception:
+                pass
             return Response({"message": f"SubOrder #{pk} accepted."})
         elif action == "deny":
             suborder.status = SubOrder.Status.DENIED
@@ -250,6 +282,16 @@ class SubOrderAcceptDenyView(APIView):
             for item in suborder.items.all():
                 item.listing.stock_qty += item.quantity
                 item.listing.save()
+            try:
+                Notification.objects.create(
+                    user=suborder.order.customer,
+                    type=Notification.Type.ORDER_DENIED,
+                    title="SubOrder Denied",
+                    message=f"Shop '{suborder.shop.name}' could not fulfill items in Order #{suborder.order.order_number}. Stock has been updated.",
+                    payload={"order_number": suborder.order.order_number, "suborder_id": suborder.id},
+                )
+            except Exception:
+                pass
             return Response({"message": f"SubOrder #{pk} denied and stock restored."})
         else:
             return Response({"error": "Invalid action. Use 'accept' or 'deny'."}, status=status.HTTP_400_BAD_REQUEST)

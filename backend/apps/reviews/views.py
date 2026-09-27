@@ -61,4 +61,4 @@ class CustomerFavoriteListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Favorite.objects.filter(customer=self.request.user).select_related("listing__product", "listing__shop")
+        return Favorite.objects.filter(customer=self.request.user).select_related("listing__product", "listing__shop").order_by("-created_at")

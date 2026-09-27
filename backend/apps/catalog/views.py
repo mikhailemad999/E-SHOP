@@ -170,7 +170,7 @@ class CatalogSearchView(generics.ListAPIView):
         if max_price:
             qs = qs.filter(lowest_price__lte=max_price)
 
-        return qs.select_related("category").prefetch_related("listings__images")
+        return qs.select_related("category").prefetch_related("listings__images").order_by("-created_at")
 
 
 # ─── Shop Views ───────────────────────────────────────────────────
