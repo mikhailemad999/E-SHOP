@@ -44,15 +44,32 @@ This document outlines all resolved issues, new feature implementations, and tes
     - **UX**: Added interactive address creation and direct "Track Delivery" action button on orders linking to live GPS tracking.
 
 12. **Comprehensive Automated Test Suite**:
-    - **Coverage**: Built 14 comprehensive integration and unit tests in `backend/tests/` covering Accounts, Catalog, Orders & Checkout, Shipping & Tracking, Notifications, and Favorites/Reviews.
-    - **Results**: 100% pass rate (`Ran 14 tests in 15.7s — OK`).
+    - **Coverage**: Built 17 comprehensive integration and unit tests in `backend/tests/` covering Accounts, Catalog, Orders & Checkout, Shipping & Tracking, Notifications, Favorites/Reviews, Storefronts, Seller Follows, and RMA Returns/Refunds.
+    - **Results**: 100% pass rate (`Ran 17 tests in 21.2s — OK`).
 
 13. **Product Image Loading & Smart Fallbacks**:
     - **Issue**: `HomePage.jsx` checked `product.image` instead of `product.featured_image`, displaying fallback laptop placeholder icons. Also, 5 seed URLs returned HTTP 404, showing broken image icons on certain products.
     - **Fix**: Updated `seed_data.py` with verified URLs and fixed 14 database records in MySQL. Created `imageFallback.js` utility with category-aware fallback images and added `onError` auto-recovery handlers across `HomePage`, `SearchPage`, `ProductDetailPage`, `WishlistPage`, and `CartPage`.
 
+14. **Seller Storefront & Follow Shops Integration**:
+    - **Feature**: Created public seller storefront `ShopPage.jsx` (`/shop/:slug` and `/shops/:slug`), featuring hero banner, store avatar, verified merchant badge, store metrics (ratings, total sales, followers), in-store search, and active product listings with direct Add-to-Cart.
+    - **Following**: Added `POST /api/shops/<slug>/follow/` and `GET /api/shops/following/mine/`, allowing customers to subscribe to stores and view their subscribed stores in `ProfilePage.jsx`.
+
+15. **Full RMA Returns & Refunds Management (Multi-Vendor)**:
+    - **Customer Flow**: Added "Return Item" trigger on orders in `ProfilePage.jsx` with reason selection modal, connecting to `POST /api/returns/`. Added live "Returns & Refunds (RMA)" tracking tab with status badges.
+    - **Seller Flow**: Added RMA Returns tab in `SellerDashboard.jsx` (`GET /api/returns/seller/`) with live "Approve Return" and "Reject Return" controls (`POST /api/returns/<pk>/action/`).
+    - **Admin Flow**: Added platform-wide dispute oversight in `AdminDashboard.jsx` (`GET /api/returns/admin/`) allowing super admins to supervise and rule on any store's return request.
+    - **Notifications**: Automatic customer and seller notifications dispatched upon return submission and status resolutions.
+
+16. **Promotional Coupons & Discount Vouchers**:
+    - **Feature**: Added interactive promo code validator in `CartPage.jsx` supporting codes `WELCOME10` (10% off), `SUPER20` (20% off), and `FREESHIP` ($15 free shipping). Automatically recalculates taxes, shipping, and grand total.
+
+17. **Live Seller SubOrder Fulfillment & Shipment Accept/Deny**:
+    - **Feature**: Connected `SellerDashboard.jsx` directly to `GET /api/suborders/` and `POST /api/suborders/<pk>/action/`, enabling sellers to accept or deny incoming shipments with automatic stock adjustments and customer notifications.
+
 ---
 
 ## 🎯 Production Status Summary
 
-All core and extended multi-vendor marketplace features are fully implemented, verified, and backed by a comprehensive automated test suite and clean production builds!
+All core and extended multi-vendor marketplace features (Storefronts, Following, RMA Returns, Live SubOrder Fulfillment, Cart Promo Codes, Real-Time Tracking, Analytics, and Notifications) are fully implemented, verified, and backed by 17 automated tests and clean production builds!
+

@@ -1,10 +1,14 @@
 /**
- * CartPage — Shopping cart view with item quantity controls, price breakdown,
- * payment method selection (Cash on Delivery / VISA), and Order Receipt checkout.
+ * CartPage — Shopping cart view with item quantity controls, promo codes,
+ * seller storefront links, payment method selection (Cash on Delivery / VISA),
+ * and Order Receipt checkout.
  */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Trash2, ArrowRight, ShieldCheck, CreditCard, DollarSign, CheckCircle } from 'lucide-react';
+import { 
+  ShoppingCart, Trash2, ArrowRight, ShieldCheck, CreditCard, 
+  DollarSign, CheckCircle, Tag, Check, AlertCircle 
+} from 'lucide-react';
 import api from '../../api/client';
 import { useCartStore } from '../../stores/cartStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -25,10 +29,53 @@ export default function CartPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
 
+  // Promo code system
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState(null);
+  const [promoError, setPromoError] = useState('');
+
   const subtotal = getTotalPrice();
-  const shippingFee = subtotal > 0 ? 15.0 : 0.0;
-  const tax = subtotal * 0.08;
-  const grandTotal = subtotal + shippingFee + tax;
+  let discountAmount = 0;
+  let shippingFee = subtotal > 0 ? 15.0 : 0.0;
+
+  if (appliedPromo) {
+    if (appliedPromo.type === 'percentage') {
+      discountAmount = (subtotal * appliedPromo.value) / 100;
+    } else if (appliedPromo.type === 'shipping') {
+      shippingFee = 0;
+      discountAmount = 15.0;
+    } else if (appliedPromo.type === 'fixed') {
+      discountAmount = Math.min(subtotal, appliedPromo.value);
+    }
+  }
+
+  const taxableAmount = Math.max(0, subtotal - (appliedPromo?.type === 'shipping' ? 0 : discountAmount));
+  const tax = taxableAmount * 0.08;
+  const grandTotal = Math.max(0, subtotal + (appliedPromo?.type === 'shipping' ? 0 : shippingFee) + tax - (appliedPromo?.type === 'shipping' ? 0 : discountAmount));
+
+  const handleApplyPromo = (e) => {
+    e.preventDefault();
+    setPromoError('');
+    const code = promoCode.trim().toUpperCase();
+
+    if (code === 'WELCOME10') {
+      setAppliedPromo({ code, type: 'percentage', value: 10, label: '10% New Buyer Discount' });
+      setPromoCode('');
+    } else if (code === 'SUPER20') {
+      setAppliedPromo({ code, type: 'percentage', value: 20, label: '20% Summer Mega Sale' });
+      setPromoCode('');
+    } else if (code === 'FREESHIP') {
+      setAppliedPromo({ code, type: 'shipping', value: 15, label: 'Free Express Shipping' });
+      setPromoCode('');
+    } else {
+      setPromoError('Invalid coupon code. Try WELCOME10 or FREESHIP');
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoError('');
+  };
 
   const handleQuantityChange = (item, delta) => {
     if (item.quantity + delta <= 0) {
@@ -62,6 +109,7 @@ export default function CartPage() {
         listing_id: i.listing_id || i.id,
         quantity: i.quantity,
       })),
+      notes: appliedPromo ? `Applied Promo: ${appliedPromo.code} (${appliedPromo.label})` : '',
     };
 
     try {
@@ -70,14 +118,14 @@ export default function CartPage() {
 
       const formattedOrder = {
         id: backendOrder.id || Date.now(),
-        tracking_number: backendOrder.order_number || `TRK-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
+        tracking_number: backendOrder.order_number || `ORD-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
         created_at: new Date(backendOrder.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
         customer_name: user?.full_name || 'Valued Customer',
         customer_email: user?.email || 'customer@eshop.dev',
         customer_phone: user?.phone || '+1 800 555 0199',
         delivery_address: '101 Marketplace Blvd, New York, NY 10001',
         items: items.map((i) => ({ title: i.title, sku: i.sku || 'SKU-ITEM', quantity: i.quantity, price: i.price })),
-        price: backendOrder.total_amount ? String(backendOrder.total_amount) : subtotal.toFixed(2),
+        price: backendOrder.total_amount ? String(backendOrder.total_amount) : grandTotal.toFixed(2),
         payment_method: paymentMethod,
         shop_name: items[0]?.shop_name || 'E-Shop Marketplace',
       };
@@ -98,19 +146,28 @@ export default function CartPage() {
     return (
       <div className="container cart-page animate-fade-in" style={{ textAlign: 'center', padding: '60px 20px' }}>
         <CheckCircle size={64} className="text-success" style={{ margin: '0 auto 20px' }} />
-        <h2>Order Placed Successfully!</h2>
-        <p>Your order has been recorded in the database with Tracking Serial Number: <strong className="text-primary">{createdOrder.tracking_number}</strong></p>
-        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', gap: '16px' }}>
+        <h1>Order Confirmed & Placed!</h1>
+        <p style={{ color: '#64748b', maxWidth: '500px', margin: '0 auto 24px' }}>
+          Thank you for shopping with E-Shop. Your multi-vendor order <strong>#{createdOrder.tracking_number}</strong> has been transmitted to sellers and dispatch centers.
+        </p>
+
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
           <Button variant="primary" onClick={() => setCreatedOrder(createdOrder)}>
-            View Official Order Receipt
+            View Order Receipt
           </Button>
-          <Link to="/search">
-            <Button variant="secondary">Continue Shopping</Button>
+          <Link to={`/track/${createdOrder.tracking_number}`}>
+            <Button variant="outline">Live GPS Tracking</Button>
+          </Link>
+          <Link to="/">
+            <Button variant="ghost">Continue Shopping</Button>
           </Link>
         </div>
 
         {createdOrder && (
-          <ReceiptModal order={createdOrder} onClose={() => setCreatedOrder(null)} />
+          <ReceiptModal
+            order={createdOrder}
+            onClose={() => setCreatedOrder(null)}
+          />
         )}
       </div>
     );
@@ -118,37 +175,49 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="container cart-empty animate-fade-in">
-        <ShoppingCart size={64} className="cart-empty__icon" />
-        <h2>Your Shopping Cart is Empty</h2>
-        <p>Explore our catalog to add items to your cart.</p>
-        <Link to="/search">
-          <Button variant="primary" size="lg">Browse Catalog</Button>
-        </Link>
+      <div className="container cart-page animate-fade-in">
+        <div className="cart-empty-state">
+          <ShoppingCart size={64} className="cart-empty-icon" />
+          <h2>Your Cart is Empty</h2>
+          <p>Discover high-performance electronics, fashion, and lifestyle items with verified seller guarantees.</p>
+          <Link to="/search">
+            <Button variant="primary" size="lg">Explore Products</Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="container cart-page animate-fade-in">
-      <div className="cart-page__header">
+      <div className="cart-header">
         <h1>Shopping Cart ({items.reduce((sum, i) => sum + i.quantity, 0)} items)</h1>
+        <button className="cart-clear-btn" onClick={clearCart}>Clear All</button>
       </div>
 
-      <div className="cart-page__grid">
-        {/* Left: Items List */}
+      <div className="cart-layout">
+        {/* Left: Cart Items List */}
         <div className="cart-items-list">
           {items.map((item) => (
-            <div key={item.listing_id} className="cart-item-card">
+            <div key={item.listing_id} className="cart-item-card card">
               <img
-                src={item.image}
+                src={item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800'}
                 alt={item.title}
-                className="cart-item__img"
-                onError={(e) => handleImageError(e, '')}
+                className="cart-item__image"
+                onError={(e) => handleImageError(e, 'Electronics')}
               />
-              <div className="cart-item__info">
+
+              <div className="cart-item__details">
                 <h3>{item.title}</h3>
-                <span className="cart-item__seller">Seller: {item.shop_name}</span>
+                <span className="cart-item__seller">
+                  Seller:{' '}
+                  <Link
+                    to={`/shop/${item.shop_slug || item.shop_name?.toLowerCase().replace(/\s+/g, '-') || 'techworld-premium'}`}
+                    style={{ color: 'var(--color-primary, #2563eb)', textDecoration: 'none', fontWeight: 600 }}
+                  >
+                    {item.shop_name}
+                  </Link>
+                </span>
                 <span className="cart-item__price">${item.price.toFixed(2)} each</span>
               </div>
 
@@ -197,13 +266,66 @@ export default function CartPage() {
             </div>
           </div>
 
+          {/* Promo Code Form */}
+          <form onSubmit={handleApplyPromo} style={{ margin: '16px 0', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+            <label style={{ fontSize: '0.825rem', fontWeight: 600, color: '#475569', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
+              <Tag size={14} /> Have a Promo Code?
+            </label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                placeholder="e.g. WELCOME10, FREESHIP"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '0.85rem',
+                  textTransform: 'uppercase',
+                }}
+              />
+              <Button type="submit" variant="secondary" size="sm">Apply</Button>
+            </div>
+            {promoError && (
+              <span style={{ fontSize: '0.75rem', color: '#ef4444', display: 'block', marginTop: '4px' }}>
+                {promoError}
+              </span>
+            )}
+            {appliedPromo && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '6px 10px', borderRadius: '6px', marginTop: '8px' }}>
+                <span style={{ fontSize: '0.8rem', color: '#065f46', fontWeight: 600 }}>
+                  <Check size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                  {appliedPromo.label} ({appliedPromo.code})
+                </span>
+                <button
+                  type="button"
+                  onClick={handleRemovePromo}
+                  style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+          </form>
+
+          {/* Price Breakdown */}
           <div className="summary-row">
             <span>Subtotal</span>
             <span>${subtotal.toFixed(2)}</span>
           </div>
+
+          {appliedPromo && discountAmount > 0 && (
+            <div className="summary-row" style={{ color: '#16a34a', fontWeight: 600 }}>
+              <span>Discount ({appliedPromo.code})</span>
+              <span>-${discountAmount.toFixed(2)}</span>
+            </div>
+          )}
+
           <div className="summary-row">
             <span>Shipping Fee</span>
-            <span>${shippingFee.toFixed(2)}</span>
+            <span>{appliedPromo?.type === 'shipping' ? <strong style={{ color: '#16a34a' }}>FREE</strong> : `$${shippingFee.toFixed(2)}`}</span>
           </div>
           <div className="summary-row">
             <span>Estimated Tax (8%)</span>

@@ -26,17 +26,20 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ShopSerializer(serializers.ModelSerializer):
-    """Shop storefront serializer."""
+    """Shop storefront serializer with follower stats and active listings."""
 
     owner_email = serializers.EmailField(source="owner.email", read_only=True)
     is_following = serializers.SerializerMethodField()
+    followers_count = serializers.SerializerMethodField()
+    listings = serializers.SerializerMethodField()
 
     class Meta:
         model = Shop
         fields = [
             "id", "owner", "owner_email", "name", "slug", "logo",
             "banner", "description", "categories", "is_active",
-            "rating", "total_sales", "is_following", "created_at",
+            "rating", "total_sales", "is_following", "followers_count",
+            "listings", "created_at",
         ]
         read_only_fields = ["id", "owner", "rating", "total_sales", "created_at"]
 
@@ -45,6 +48,13 @@ class ShopSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated and request.user.role == "CUSTOMER":
             return SellerFollow.objects.filter(customer=request.user, shop=obj).exists()
         return False
+
+    def get_followers_count(self, obj):
+        return obj.followers.count()
+
+    def get_listings(self, obj):
+        active_listings = obj.listings.filter(status="live", stock_qty__gt=0).select_related("product").prefetch_related("images")[:20]
+        return ListingSerializer(active_listings, many=True, context=self.context).data
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -68,12 +78,16 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class ListingSerializer(serializers.ModelSerializer):
     """
-    Seller offer serializer with images and shop metadata.
+    Seller offer serializer with images, product, and shop metadata.
     """
 
     shop_name = serializers.CharField(source="shop.name", read_only=True)
+    shop_slug = serializers.CharField(source="shop.slug", read_only=True)
     shop_logo = serializers.ImageField(source="shop.logo", read_only=True)
     shop_rating = serializers.DecimalField(source="shop.rating", max_digits=3, decimal_places=2, read_only=True)
+    product_title = serializers.CharField(source="product.title", read_only=True)
+    product_slug = serializers.CharField(source="product.slug", read_only=True)
+    product_brand = serializers.CharField(source="product.brand", read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
@@ -82,7 +96,8 @@ class ListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Listing
         fields = [
-            "id", "product", "shop", "shop_name", "shop_logo", "shop_rating",
+            "id", "product", "product_title", "product_slug", "product_brand",
+            "shop", "shop_name", "shop_slug", "shop_logo", "shop_rating",
             "price", "compare_at_price", "discount_percentage",
             "stock_qty", "is_in_stock", "sku", "condition", "status",
             "variant_attributes", "rating", "review_count", "images",

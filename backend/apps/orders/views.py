@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import Address
-from apps.accounts.permissions import IsCustomer, IsSeller
+from apps.accounts.permissions import IsCustomer, IsSeller, IsAdminOrSuperAdmin
 from apps.catalog.models import Listing
 from apps.notifications.models import Notification
 from .models import Cart, CartItem, Order, ReturnRequest, SubOrder, SubOrderItem
@@ -305,7 +305,112 @@ class ReturnRequestListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return ReturnRequest.objects.filter(customer=self.request.user)
+        return ReturnRequest.objects.filter(customer=self.request.user).select_related(
+            "suborder_item__listing__product", "suborder_item__suborder__shop", "suborder_item__suborder__order"
+        )
 
     def perform_create(self, serializer):
-        serializer.save(customer=self.request.user)
+        return_req = serializer.save(customer=self.request.user)
+        # Notify Seller
+        try:
+            shop_owner = return_req.suborder_item.suborder.shop.owner
+            if shop_owner:
+                Notification.objects.create(
+                    user=shop_owner,
+                    type=Notification.Type.RETURN_UPDATE,
+                    title="New Return Request Received",
+                    message=f"Customer requested a return for '{return_req.suborder_item.listing.product.title}' (Order #{return_req.suborder_item.suborder.order.order_number}).",
+                    payload={"return_id": return_req.id, "suborder_id": return_req.suborder_item.suborder.id},
+                )
+        except Exception:
+            pass
+
+
+class SellerReturnRequestListView(generics.ListAPIView):
+    """Seller views all Return Requests (RMA) for their shop."""
+
+    serializer_class = ReturnRequestSerializer
+    permission_classes = [IsSeller]
+
+    def get_queryset(self):
+        if hasattr(self.request.user, "shop"):
+            return ReturnRequest.objects.filter(
+                suborder_item__suborder__shop=self.request.user.shop
+            ).select_related(
+                "customer", "suborder_item__listing__product", "suborder_item__suborder__order"
+            )
+        return ReturnRequest.objects.none()
+
+
+class AdminReturnRequestListView(generics.ListAPIView):
+    """Admin / Super Admin views every shop's return requests across platform."""
+
+    serializer_class = ReturnRequestSerializer
+    permission_classes = [IsAdminOrSuperAdmin]
+
+    def get_queryset(self):
+        return ReturnRequest.objects.all().select_related(
+            "customer", "suborder_item__listing__product", "suborder_item__suborder__shop", "suborder_item__suborder__order"
+        )
+
+
+class ReturnRequestActionView(APIView):
+    """
+    Seller or Admin updates return status (e.g. approved, rejected, refunded).
+    Automatically records resolution and sends an in-app notification to the customer.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            return_req = ReturnRequest.objects.select_related(
+                "customer", "suborder_item__suborder__shop", "suborder_item__suborder__order"
+            ).get(pk=pk)
+        except ReturnRequest.DoesNotExist:
+            return Response({"error": "Return request not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        is_admin = request.user.role in ("ADMIN", "SUPER_ADMIN")
+        is_seller_owner = (
+            request.user.role == "SELLER"
+            and hasattr(request.user, "shop")
+            and return_req.suborder_item.suborder.shop == request.user.shop
+        )
+
+        if not (is_admin or is_seller_owner):
+            return Response({"error": "You do not have permission to moderate this return."}, status=status.HTTP_403_FORBIDDEN)
+
+        new_status = request.data.get("status")
+        notes = request.data.get("admin_notes", "")
+
+        valid_statuses = [s[0] for s in ReturnRequest.Status.choices]
+        if new_status not in valid_statuses:
+            return Response({"error": f"Invalid status. Choose from: {valid_statuses}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return_req.status = new_status
+        if notes:
+            return_req.admin_notes = notes
+        if new_status in [ReturnRequest.Status.REFUNDED, ReturnRequest.Status.REJECTED]:
+            from django.utils import timezone
+            return_req.resolved_at = timezone.now()
+
+        return_req.save()
+
+        # Send real-time in-app notification to customer
+        try:
+            display_status = new_status.replace('_', ' ').title()
+            Notification.objects.create(
+                user=return_req.customer,
+                type=Notification.Type.RETURN_UPDATE,
+                title=f"Return #{return_req.id} {display_status}",
+                message=f"Your return request for '{return_req.suborder_item.listing.product.title}' has been updated to {display_status}.",
+                payload={"return_id": return_req.id, "status": new_status},
+            )
+        except Exception:
+            pass
+
+        return Response({
+            "message": f"Return #{return_req.id} status updated to {new_status}.",
+            "return": ReturnRequestSerializer(return_req).data,
+        })
+

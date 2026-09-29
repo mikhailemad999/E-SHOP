@@ -246,7 +246,13 @@ export default function ProductDetailPage() {
               <Store size={18} className="text-primary" />
               <div>
                 <span className="seller-label">Sold & Shipped by</span>
-                <strong>{selectedOffer?.shop_name || 'TechWorld Premium'}</strong> (Rating {selectedOffer?.shop_rating || '4.9'}★)
+                <Link
+                  to={`/shop/${selectedOffer?.shop_slug || 'techworld-premium'}`}
+                  style={{ color: 'var(--color-primary, #2563eb)', fontWeight: 600, textDecoration: 'none', marginLeft: '4px' }}
+                >
+                  {selectedOffer?.shop_name || 'TechWorld Premium'}
+                </Link>{' '}
+                (Rating {selectedOffer?.shop_rating || '4.9'}★)
               </div>
             </div>
 
@@ -332,7 +338,12 @@ export default function ProductDetailPage() {
               {product.other_sellers.map((seller) => (
                 <div key={seller.id} className="other-seller-row">
                   <div>
-                    <strong>{seller.shop_name}</strong>
+                    <Link
+                      to={`/shop/${seller.shop_slug || 'techworld-premium'}`}
+                      style={{ color: '#0f172a', fontWeight: 600, textDecoration: 'none' }}
+                    >
+                      {seller.shop_name}
+                    </Link>
                     <span className="other-seller-price">${seller.price}</span>
                   </div>
                   <Button

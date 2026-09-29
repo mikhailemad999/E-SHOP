@@ -204,6 +204,17 @@ class SellerFollowToggleView(APIView):
         return Response({"message": f"Now following {shop.name}.", "is_following": True}, status=status.HTTP_201_CREATED)
 
 
+class CustomerFollowedShopsView(generics.ListAPIView):
+    """Customer views all shops they are following."""
+
+    serializer_class = ShopSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        followed_shop_ids = SellerFollow.objects.filter(customer=self.request.user).values_list("shop_id", flat=True)
+        return Shop.objects.filter(id__in=followed_shop_ids, is_active=True)
+
+
 class SellerAddProductListingView(APIView):
     """
     Seller endpoint to add a new product offer to their shop.

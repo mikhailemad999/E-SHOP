@@ -16,6 +16,7 @@ import CartPage from './pages/customer/CartPage';
 import ProfilePage from './pages/customer/ProfilePage';
 import WishlistPage from './pages/customer/WishlistPage';
 import TrackingPage from './pages/customer/TrackingPage';
+import ShopPage from './pages/customer/ShopPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SellerDashboard from './pages/seller/SellerDashboard';
@@ -36,6 +37,8 @@ export default function App() {
         <Route path="search" element={<SearchPage />} />
         <Route path="products/:slug" element={<ProductDetailPage />} />
         <Route path="products/:slug/" element={<ProductDetailPage />} />
+        <Route path="shop/:slug" element={<ShopPage />} />
+        <Route path="shops/:slug" element={<ShopPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="wishlist" element={<WishlistPage />} />
         <Route path="track/:trackingNumber" element={<TrackingPage />} />

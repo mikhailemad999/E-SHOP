@@ -96,11 +96,33 @@ class ReturnRequestSerializer(serializers.ModelSerializer):
     """Return Merchandise Authorization serializer."""
 
     product_title = serializers.CharField(source="suborder_item.listing.product.title", read_only=True)
+    product_image = serializers.SerializerMethodField()
+    shop_name = serializers.CharField(source="suborder_item.suborder.shop.name", read_only=True)
+    shop_id = serializers.IntegerField(source="suborder_item.suborder.shop.id", read_only=True)
+    order_number = serializers.CharField(source="suborder_item.suborder.order.order_number", read_only=True)
+    customer_email = serializers.EmailField(source="customer.email", read_only=True)
+    customer_name = serializers.SerializerMethodField()
+    unit_price = serializers.DecimalField(source="suborder_item.unit_price", max_digits=12, decimal_places=2, read_only=True)
+    quantity = serializers.IntegerField(source="suborder_item.quantity", read_only=True)
 
     class Meta:
         model = ReturnRequest
         fields = [
-            "id", "suborder_item", "product_title", "reason",
+            "id", "suborder_item", "product_title", "product_image",
+            "shop_name", "shop_id", "order_number", "customer_email",
+            "customer_name", "unit_price", "quantity", "reason",
             "status", "admin_notes", "requested_at", "resolved_at",
         ]
-        read_only_fields = ["id", "status", "admin_notes", "requested_at", "resolved_at"]
+        read_only_fields = ["id", "status", "requested_at", "resolved_at"]
+
+    def get_customer_name(self, obj):
+        name = f"{obj.customer.first_name} {obj.customer.last_name}".strip()
+        return name if name else obj.customer.username
+
+    def get_product_image(self, obj):
+        listing = obj.suborder_item.listing
+        img = listing.images.first()
+        if img:
+            return str(img.image)
+        return None
+
